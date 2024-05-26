@@ -1,0 +1,27 @@
+{
+  "name": "another-meditation-app-backend",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "clean": "rm -rf dist && echo 'Done.'",
+    "dev": "bun --watch index.ts",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.11.6",
+    "drizzle-kit": "^0.21.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@lucia-auth/adapter-drizzle": "^1.0.7",
+    "@trpc/client": "^11.0.0-rc.377",
+    "@trpc/server": "^11.0.0-rc.377",
+    "drizzle-orm": "^0.30.10",
+    "oslo": "^1.2.0",
+    "pg": "^8.11.5"
+  }
+}
