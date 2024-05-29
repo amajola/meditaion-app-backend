@@ -9,6 +9,7 @@
     "migrate": "drizzle-kit migrate"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@types/bun": "latest",
     "@types/pg": "^8.11.6",
     "drizzle-kit": "^0.21.4"
@@ -20,6 +21,7 @@
     "@lucia-auth/adapter-drizzle": "^1.0.7",
     "@trpc/client": "^11.0.0-rc.377",
     "@trpc/server": "^11.0.0-rc.377",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.10",
     "oslo": "^1.2.0",
     "pg": "^8.11.5"

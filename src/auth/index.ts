@@ -1,31 +1,37 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import { z } from "zod";
-import { AuthAdapter, database } from "../..";
-import { userTable } from "./schema";
+import { database, lucia } from "../..";
+import { userTable, type UserType } from "./schema";
 import { hash, verify } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { eq } from "drizzle-orm";
-import { serializeCookie } from "oslo/cookie";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 
-interface ContextInterface {
-  req: Request;
-  res: Response;
+type createSessionType = Omit<UserType, "password">;
+export async function createContext(opts: CreateNextContextOptions) {
+  const createSession = async (user: createSessionType) => {
+    const session = await lucia.createSession(user.id, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    opts.res.setHeader("Set-Cookie", sessionCookie.serialize());
+  };
+  return { req: opts.req, res: opts.res, createSession };
 }
 
-export const createContext = async ({ req, res }: ContextInterface) => {
-  return {
-    req,
-    res,
-  };
-};
 export type Context = Awaited<ReturnType<typeof createContext>>;
 
-const t = initTRPC.context<{req: Request, res: Response}>().create();
+const t = initTRPC.context<Context>().create({});
 export const publicProcedure = t.procedure;
 export const router = t.router;
 
-export default router({
-  user: publicProcedure
+const signupOutputSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  name: z.string(),
+  success: z.boolean(),
+});
+
+const AuthRouter = router({
+  signup: publicProcedure
     .input(
       z.object({
         email: z.string().email(),
@@ -33,7 +39,8 @@ export default router({
         name: z.string(),
       })
     )
-    .mutation(async ({ input: { password, email, name } }) => {
+    .output(signupOutputSchema)
+    .mutation(async ({ input: { password, email, name }, ctx }) => {
       const passwordHash = await hash(password, {
         // recommended minimum parameters
         memoryCost: 19456,
@@ -43,18 +50,31 @@ export default router({
       });
       const id = generateIdFromEntropySize(10); // 16 characters long
       try {
-        return await database
+        const user = await database
           .insert(userTable)
           .values({ id, email, password: passwordHash, name })
-          .returning();
+          .returning({
+            id: userTable.id,
+            email: userTable.email,
+            name: userTable.name,
+          });
+
+        return {
+          success: true,
+          ...user[0]
+        };
       } catch (error) {
-        return error;
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "User Already exists",
+          cause: error,
+        });
       }
     }),
   signin: publicProcedure
     .input(z.object({ email: z.string().email(), password: z.string() }))
-    .mutation(async ({ input: { email, password }, ctx}) => {
-      const today = new Date();
+    .output(signupOutputSchema)
+    .mutation(async ({ input: { email, password }, ctx }) => {
       try {
         const user = await database.query.userTable.findFirst({
           where: eq(userTable.email, email),
@@ -70,36 +90,12 @@ export default router({
         });
         if (!validPassword) throw new Error("User not found");
 
-        const sessionExists = await AuthAdapter.getUserSessions(user.id);
-
-        if (!sessionExists) {
-          await AuthAdapter.setSession({
-            userId: user.id,
-            expiresAt: new Date(today.getDay() + 1),
-            id: "",
-            attributes: {},
-          });
-
-          const session = await AuthAdapter.getUserSessions(user.id);
-
-          return {
-            status: 302,
-            headers: {
-              Location: "/",
-              "Set-Cookie": session,
-            },
-          };
-        }
-
-        console.log(ctx);
-        // ctx.res.headers.set('Content-Type', 'application/json');
-        // ctx.res.headers.set('Custom-Header', 'SomeValue');
+        ctx.createSession(user);
         return {
-          status: 302,
-          headers: {
-            Location: "/",
-            "Set-Cookie": sessionExists.toString(),
-          },
+          success: true,
+          email: user.email,
+          id: user.id,
+          name: user.name,
         };
       } catch (error) {
         console.log(error);
@@ -111,3 +107,6 @@ export default router({
       }
     }),
 });
+
+export type AuthRouter = typeof AuthRouter;
+export default AuthRouter;

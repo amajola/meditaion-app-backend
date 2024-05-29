@@ -1,5 +1,5 @@
 import { initTRPC } from "@trpc/server";
-import  authRouter  from "./auth";
+import  authRouter  from "./auth/";
 
 const t = initTRPC.create();
 
@@ -11,4 +11,5 @@ export const appRouter = router({
   auth: authRouter
 });
 
+export const createCaller = t.createCallerFactory(appRouter)
 export type AppRouter = typeof appRouter;

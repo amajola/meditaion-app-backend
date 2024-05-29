@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, PgSerial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 
 export const userTable = pgTable("user", {
@@ -19,5 +19,5 @@ export const sessionTable = pgTable("session", {
   }).notNull(),
 });
 
-export type NewUser = typeof userTable.$inferInsert;
-export type NewSession = typeof sessionTable.$inferInsert;
+export type UserType = typeof userTable.$inferInsert;
+export type SessioType = typeof sessionTable.$inferInsert;
