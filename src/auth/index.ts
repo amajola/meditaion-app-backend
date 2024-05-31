@@ -1,25 +1,12 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import { z } from "zod";
-import { database, lucia } from "../..";
-import { userTable, type UserType } from "./schema";
+import { userTable } from "./schema";
 import { hash, verify } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { eq } from "drizzle-orm";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
+import type { AppContext } from "../util/context";
 
-type createSessionType = Omit<UserType, "password">;
-export async function createContext(opts: CreateNextContextOptions) {
-  const createSession = async (user: createSessionType) => {
-    const session = await lucia.createSession(user.id, {});
-    const sessionCookie = lucia.createSessionCookie(session.id);
-    opts.res.setHeader("Set-Cookie", sessionCookie.serialize());
-  };
-  return { req: opts.req, res: opts.res, createSession };
-}
-
-export type Context = Awaited<ReturnType<typeof createContext>>;
-
-const t = initTRPC.context<Context>().create({});
+const t = initTRPC.context<AppContext>().create({});
 export const publicProcedure = t.procedure;
 export const router = t.router;
 
@@ -50,14 +37,14 @@ const AuthRouter = router({
       });
       const id = generateIdFromEntropySize(10); // 16 characters long
       try {
-        const user = await database
+        const user = await ctx.database
           .insert(userTable)
           .values({ id, email, password: passwordHash, name })
           .returning({
             id: userTable.id,
             email: userTable.email,
             name: userTable.name,
-          });
+  });
 
         return {
           success: true,
@@ -76,7 +63,7 @@ const AuthRouter = router({
     .output(signupOutputSchema)
     .mutation(async ({ input: { email, password }, ctx }) => {
       try {
-        const user = await database.query.userTable.findFirst({
+        const user = await ctx.database.query.userTable.findFirst({
           where: eq(userTable.email, email),
         });
 
