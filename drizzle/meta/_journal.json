@@ -5,15 +5,36 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1716743318866,
-      "tag": "0000_new_the_order",
+      "when": 1717197025951,
+      "tag": "0000_steep_hairball",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1716743959051,
-      "tag": "0001_boring_gorgon",
+      "when": 1717197064945,
+      "tag": "0001_square_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1717198743522,
+      "tag": "0002_optimal_russian",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1717198866906,
+      "tag": "0003_optimal_dracula",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1717203607417,
+      "tag": "0004_good_frank_castle",
       "breakpoints": true
     }
   ]

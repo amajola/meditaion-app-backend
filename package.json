@@ -23,6 +23,7 @@
     "@trpc/server": "^11.0.0-rc.377",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.30.10",
+    "drizzle-zod": "^0.5.1",
     "oslo": "^1.2.0",
     "pg": "^8.11.5"
   }
