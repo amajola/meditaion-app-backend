@@ -1,6 +1,6 @@
 {
-  "id": "ca034deb-c520-4fb5-a065-19a16dfeabc6",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "bbb9dd8b-f72b-455c-bfec-0089bb5cf80e",
+  "prevId": "27ba2284-b2ae-4674-9617-0848adcfec5d",
   "version": "6",
   "dialect": "postgresql",
   "tables": {
@@ -93,6 +93,72 @@
           ]
         }
       }
+    },
+    "public.post": {
+      "name": "post",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_count_down": {
+          "name": "is_count_down",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "count_down_date": {
+          "name": "count_down_date",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content": {
+          "name": "content",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "post_user_id_user_id_fk": {
+          "name": "post_user_id_user_id_fk",
+          "tableFrom": "post",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
     }
   },
   "enums": {},

@@ -5,7 +5,7 @@ import { sessionTable, userTable, type UserType } from "../auth/schema";
 import { Client } from "pg";
 import { DrizzlePostgreSQLAdapter } from "@lucia-auth/adapter-drizzle";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { Lucia } from "lucia";
+import { Lucia, type Session } from "lucia";
 
 const client = new Client({
   host: ENV.DB_HOST,
@@ -27,6 +27,12 @@ export const AuthAdapter = new DrizzlePostgreSQLAdapter(
   userTable
 );
 
+interface Register {
+  Lucia: typeof lucia;
+  UserId: number;
+  email: string;
+}
+
 export const lucia = new Lucia(AuthAdapter, {
   sessionCookie: {
     attributes: {
@@ -42,25 +48,29 @@ export const lucia = new Lucia(AuthAdapter, {
 });
 
 declare module "lucia" {
-    interface Register {
-      Lucia: typeof lucia;
-      DatabaseUserAttributes: {
-        email: string;
-      };
-    }
+  interface Register {
+    Lucia: typeof lucia;
+    UserId: number;
+    email: string;
   }
+}
 
 type createSessionType = Omit<UserType, "password">;
 export async function createAppContext(opts: CreateNextContextOptions) {
   const createSession = async (user: createSessionType) => {
     const session = await lucia.createSession(user.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    opts.res.setHeader("Set-Cookie", sessionCookie.serialize());
+    return { cookie: sessionCookie.serialize(), cookieId: session.id };
   };
+
+  const sessionId = lucia.readBearerToken(opts.req.headers.authorization ?? "");
+  const { session } = await lucia.validateSession(sessionId ?? "");
+
   return {
     ...opts,
     database,
-    createSession
+    createSession,
+    session,
   };
 }
 

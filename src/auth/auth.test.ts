@@ -1,8 +1,7 @@
 import { expect, test, describe } from "bun:test";
-import { createCaller, type AppRouter } from "../router";
+import { type AppRouter } from "../router";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { faker } from "@faker-js/faker";
-import { z } from "zod";
 
 const client = createTRPCClient<AppRouter>({
   links: [
@@ -13,7 +12,7 @@ const client = createTRPCClient<AppRouter>({
 });
 
 describe("first", () => {
-  let identifier: string;
+  let identifier: number;
   const genName = faker.person.firstName();
   const genEmail = faker.internet.email();
   const genPassword = faker.internet.password();
